@@ -29,8 +29,9 @@ const CTASection = () => {
 
           {/* Description */}
           <p className="text-lg sm:text-xl text-gray-300 mb-8 leading-relaxed">
-            Join thousands of crypto projects that have already created their professional websites 
-            with our AI-powered platform. Get started in under 30 seconds.
+            Join thousands of people who have already created their websites using AI
+            <br/>
+            Create and host in one-click
           </p>
 
           {/* CTA Buttons */}
@@ -52,7 +53,7 @@ const CTASection = () => {
 
           {/* Trust Indicators */}
           <div className="mt-12 pt-8 border-t border-gray-800">
-            <p className="text-gray-400 text-sm mb-4">Trusted by leading crypto projects</p>
+            <p className="text-gray-400 text-sm mb-4">Trusted by leading platforms</p>
             <div className="flex flex-wrap justify-center items-center gap-6 text-gray-500">
               <span className="text-sm font-medium">DeFi Pulse</span>
               <span className="text-sm font-medium">CoinGecko</span>

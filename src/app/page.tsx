@@ -8,7 +8,7 @@ const HomePage = () => {
   return (
     <main>
       <HeroSection />
-      <StatsSection />
+      {/* <StatsSection /> */}
       <DiscoverySection />
       <CTASection />
     </main>

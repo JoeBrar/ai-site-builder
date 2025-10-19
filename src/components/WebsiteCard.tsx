@@ -30,7 +30,7 @@ const WebsiteCard = ({ website }: WebsiteCardProps) => {
   };
 
   return (
-    <div className="group bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 hover:border-purple-500/50 transition-all transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/10">
+    <div className="group bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-2 hover:border-purple-500/50 transition-all transform hover:scale-105 hover:shadow-lg hover:shadow-purple-500/10">
       {/* Header with Logo and Title */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -54,27 +54,12 @@ const WebsiteCard = ({ website }: WebsiteCardProps) => {
             <p className="text-sm text-gray-400">/{website.customUrl}</p>
           </div>
         </div>
-        
-        {website.isFeatured && (
-          <div className="flex-shrink-0 bg-yellow-600/20 text-yellow-400 px-2 py-1 rounded text-xs font-medium">
-            Featured
-          </div>
-        )}
       </div>
 
       {/* Description */}
       <p className="text-gray-300 text-sm mb-4 line-clamp-3">
         {website.description}
       </p>
-
-      {/* Category Tag */}
-      {website.category && (
-        <div className="mb-4">
-          <span className="inline-block bg-purple-600/20 text-purple-400 px-2 py-1 rounded text-xs font-medium">
-            {website.category}
-          </span>
-        </div>
-      )}
 
       {/* Footer Stats */}
       <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
