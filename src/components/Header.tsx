@@ -3,6 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Zap, Menu, X } from 'lucide-react';
+import WalletButton from './WalletButton';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -56,6 +57,7 @@ const Header = () => {
             >
               Create Website
             </Link>
+            <WalletButton />
           </nav>
 
           {/* Mobile Menu Button */}
@@ -105,6 +107,9 @@ const Header = () => {
               >
                 Create Website
               </Link>
+              <div className="pt-2">
+                <WalletButton />
+              </div>
             </div>
           </div>
         )}
