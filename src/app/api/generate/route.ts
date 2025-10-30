@@ -59,6 +59,8 @@ export async function POST(req: NextRequest) {
       .replace(/```\s*$/i, "")
       .trim() : '';
 
+    console.log("cleaned data from AI - ",cleaned)
+    
     // Very basic guard: ensure it looks like an HTML document
     const html = /<html[\s\S]*<\/html>/i.test(cleaned) ? cleaned : `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8" />\n<meta name="viewport" content="width=device-width, initial-scale=1" />\n<title>Generated Site</title>\n<style>body{font-family:system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; padding:24px; max-width:960px; margin:0 auto;}</style>\n</head>\n<body>\n<main>\n<h1>Website generation incomplete</h1>\n<p>The AI returned content that did not look like a full HTML document.</p>\n<pre style="white-space:pre-wrap; background:#f6f8fa; padding:12px; border-radius:8px;">${cleaned.replace(/[<&>]/g, (c) => ({"<":"&lt;","&":"&amp;",">":"&gt;"}[c] as string))}</pre>\n</main>\n</body>\n</html>`;
     console.log("html data from AI - ",html)

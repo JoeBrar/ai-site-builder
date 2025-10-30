@@ -10,26 +10,34 @@ const WebsiteGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationComplete, setGenerationComplete] = useState(false);
   const [urlAvailable, setUrlAvailable] = useState<boolean | null>(null);
+  const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const maxDescriptionLength = 2000;
   const minDescriptionLength = 10;
   const maxUrlLength = 50;
+  const slugPattern = /^[a-z0-9-]{3,50}$/;
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     if (value.length <= maxDescriptionLength) {
       setDescription(value);
+      setError(null);
     }
   };
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-    if (value.length <= maxUrlLength) {
-      setCustomUrl(value);
-      // Simulate URL availability check
-      setTimeout(() => {
-        setUrlAvailable(value.length > 0 ? Math.random() > 0.3 : null);
-      }, 500);
+    const sanitizedValue = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    if (sanitizedValue.length <= maxUrlLength) {
+      setCustomUrl(sanitizedValue);
+      setPublishedUrl(null);
+      setGenerationComplete(false);
+      setError(null);
+      if (sanitizedValue.length === 0) {
+        setUrlAvailable(null);
+        return;
+      }
+      setUrlAvailable(slugPattern.test(sanitizedValue));
     }
   };
 
@@ -55,20 +63,63 @@ const WebsiteGenerator = () => {
   };
 
   const handleGenerate = async () => {
+    if (isGenerating) {
+      return;
+    }
+
+    if (!canGenerate) {
+      setError("Please make sure all required fields are valid before generating.");
+      return;
+    }
+
+    const slug = customUrl.trim().toLowerCase();
     setIsGenerating(true);
-    
-    // Simulate generation process
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    setIsGenerating(false);
-    setGenerationComplete(true);
+    setError(null);
+    setGenerationComplete(false);
+    setPublishedUrl(null);
+
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: description.trim(), slug }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const message =
+          typeof (payload as { error?: unknown }).error === "string" && (payload as { error?: string }).error
+            ? (payload as { error?: string }).error as string
+            : `Request failed with status ${response.status}`;
+        throw new Error(message);
+      }
+
+      const pathFromServer =
+        typeof (payload as { path?: unknown }).path === "string"
+          ? (payload as { path?: string }).path
+          : `/${slug}`;
+
+      setPublishedUrl(pathFromServer);
+      setGenerationComplete(true);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setError(message);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  const canGenerate = description.length >= minDescriptionLength && 
-                     customUrl.length > 0 && 
-                     urlAvailable === true;
+  const canGenerate =
+    description.trim().length >= minDescriptionLength &&
+    customUrl.length > 0 &&
+    urlAvailable === true &&
+    !isGenerating;
 
   if (generationComplete) {
+    const slugPath = publishedUrl ?? `/${customUrl.trim().toLowerCase()}`;
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const displayUrl = slugPath.startsWith("http") ? slugPath : `${origin}${slugPath}`;
+
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
         <div className="text-center py-16">
@@ -84,17 +135,17 @@ const WebsiteGenerator = () => {
           <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 mb-8 max-w-md mx-auto">
             <p className="text-gray-400 mb-2">Your website is live at:</p>
             <a 
-              href={`/site/${customUrl}`}
+              href={slugPath}
               className="text-purple-400 hover:text-purple-300 font-medium text-lg break-all"
               target="_blank"
               rel="noopener noreferrer"
             >
-              dakucrypto.com/{customUrl}
+              {displayUrl}
             </a>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href={`/site/${customUrl}`}
+              href={slugPath}
               target="_blank"
               rel="noopener noreferrer"
               className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white px-8 py-3 rounded-lg font-semibold transition-all transform hover:scale-105"
@@ -109,6 +160,8 @@ const WebsiteGenerator = () => {
                 setLogo(null);
                 setLogoPreview(null);
                 setUrlAvailable(null);
+                setPublishedUrl(null);
+                setError(null);
               }}
               className="text-gray-300 hover:text-white px-8 py-3 rounded-lg font-medium border border-gray-700 hover:border-purple-500/50 transition-all"
             >
@@ -188,24 +241,17 @@ const WebsiteGenerator = () => {
             </div>
             {customUrl && (
               <p className={`mt-2 text-sm flex items-center space-x-1 ${
-                urlAvailable === true ? 'text-green-400' : urlAvailable === false ? 'text-red-400' : 'text-gray-400'
+                urlAvailable === true ? 'text-green-400' : 'text-red-400'
               }`}>
-                {urlAvailable === true && (
+                {urlAvailable === true ? (
                   <>
                     <CheckCircle className="w-4 h-4" />
-                    <span>URL is available</span>
+                    <span>Perfect! Your site will be available at /{customUrl}</span>
                   </>
-                )}
-                {urlAvailable === false && (
+                ) : (
                   <>
                     <AlertCircle className="w-4 h-4" />
-                    <span>URL is already taken</span>
-                  </>
-                )}
-                {urlAvailable === null && (
-                  <>
-                    <Loader className="w-4 h-4 animate-spin" />
-                    <span>Checking availability...</span>
+                    <span>Use 3-50 lowercase letters, numbers, or hyphens.</span>
                   </>
                 )}
               </p>
@@ -288,6 +334,11 @@ const WebsiteGenerator = () => {
                 Please complete all required fields to generate your website
               </p>
             )}
+            {error && (
+              <p className="mt-3 text-sm text-red-400 text-center">
+                {error}
+              </p>
+            )}
           </div>
         </form>
       </div>
@@ -296,3 +347,4 @@ const WebsiteGenerator = () => {
 };
 
 export default WebsiteGenerator;
+
