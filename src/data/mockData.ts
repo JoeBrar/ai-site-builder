@@ -7,7 +7,6 @@ export interface Website {
   visitCount: number;
   createdAt: string;
   isFeatured?: boolean;
-  category?: string;
 }
 
 export const mockWebsites: Website[] = [
@@ -19,8 +18,7 @@ export const mockWebsites: Website[] = [
     logoUrl: 'https://images.pexels.com/photos/730547/pexels-photo-730547.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
     visitCount: 15420,
     createdAt: '2025-01-15T10:30:00Z',
-    isFeatured: true,
-    category: 'DeFi'
+    isFeatured: true
   },
   {
     id: '2',
@@ -29,8 +27,7 @@ export const mockWebsites: Website[] = [
     customUrl: 'metaverse-coin',
     logoUrl: 'https://images.pexels.com/photos/1181298/pexels-photo-1181298.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
     visitCount: 8930,
-    createdAt: '2025-01-14T15:45:00Z',
-    category: 'Gaming'
+    createdAt: '2025-01-14T15:45:00Z'
   },
   {
     id: '3',
@@ -39,8 +36,7 @@ export const mockWebsites: Website[] = [
     customUrl: 'securevault-dao',
     visitCount: 12650,
     createdAt: '2025-01-13T09:20:00Z',
-    isFeatured: true,
-    category: 'DAO'
+    isFeatured: true
   },
   {
     id: '4',
@@ -49,8 +45,7 @@ export const mockWebsites: Website[] = [
     customUrl: 'greenchain-energy',
     logoUrl: 'https://images.pexels.com/photos/1097930/pexels-photo-1097930.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
     visitCount: 6780,
-    createdAt: '2025-01-12T14:10:00Z',
-    category: 'Sustainability'
+    createdAt: '2025-01-12T14:10:00Z'
   },
   {
     id: '5',
@@ -60,8 +55,7 @@ export const mockWebsites: Website[] = [
     logoUrl: 'https://images.pexels.com/photos/1183992/pexels-photo-1183992.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
     visitCount: 18230,
     createdAt: '2025-01-11T11:55:00Z',
-    isFeatured: true,
-    category: 'NFT'
+    isFeatured: true
   },
   {
     id: '6',
@@ -69,8 +63,7 @@ export const mockWebsites: Website[] = [
     description: 'Cross-chain DEX aggregator with optimal price discovery. Trade any token across multiple blockchains with minimal slippage and maximum efficiency.',
     customUrl: 'swapbridge',
     visitCount: 9840,
-    createdAt: '2025-01-10T16:30:00Z',
-    category: 'DeFi'
+    createdAt: '2025-01-10T16:30:00Z'
   },
   {
     id: '7',
@@ -79,8 +72,7 @@ export const mockWebsites: Website[] = [
     customUrl: 'cryptolearn',
     logoUrl: 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
     visitCount: 7320,
-    createdAt: '2025-01-09T13:15:00Z',
-    category: 'Education'
+    createdAt: '2025-01-09T13:15:00Z'
   },
   {
     id: '8',
@@ -89,8 +81,7 @@ export const mockWebsites: Website[] = [
     customUrl: 'liquidstake-pro',
     visitCount: 11560,
     createdAt: '2025-01-08T08:40:00Z',
-    isFeatured: true,
-    category: 'Staking'
+    isFeatured: true
   },
   {
     id: '9',
@@ -99,8 +90,7 @@ export const mockWebsites: Website[] = [
     customUrl: 'gamefi-arena',
     logoUrl: 'https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
     visitCount: 13790,
-    createdAt: '2025-01-07T12:00:00Z',
-    category: 'Gaming'
+    createdAt: '2025-01-07T12:00:00Z'
   },
   {
     id: '10',
@@ -108,8 +98,7 @@ export const mockWebsites: Website[] = [
     description: 'Quantum-resistant cryptocurrency wallet with military-grade security. Protect your digital assets with future-proof encryption and advanced threat detection.',
     customUrl: 'quantumvault',
     visitCount: 5670,
-    createdAt: '2025-01-06T17:25:00Z',
-    category: 'Security'
+    createdAt: '2025-01-06T17:25:00Z'
   },
   {
     id: '11',
@@ -118,8 +107,7 @@ export const mockWebsites: Website[] = [
     customUrl: 'socialtoken-hub',
     logoUrl: 'https://images.pexels.com/photos/1181472/pexels-photo-1181472.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
     visitCount: 8450,
-    createdAt: '2025-01-05T10:50:00Z',
-    category: 'Social'
+    createdAt: '2025-01-05T10:50:00Z'
   },
   {
     id: '12',
@@ -127,8 +115,7 @@ export const mockWebsites: Website[] = [
     description: 'Carbon credit marketplace powered by blockchain technology. Trade verified carbon offsets, track environmental impact, and contribute to global sustainability goals.',
     customUrl: 'ecomint-carbon',
     visitCount: 4320,
-    createdAt: '2025-01-04T14:35:00Z',
-    category: 'Sustainability'
+    createdAt: '2025-01-04T14:35:00Z'
   },
   {
     id: '13',
@@ -137,8 +124,7 @@ export const mockWebsites: Website[] = [
     customUrl: 'flashloan-master',
     visitCount: 16780,
     createdAt: '2025-01-03T09:10:00Z',
-    isFeatured: true,
-    category: 'DeFi'
+    isFeatured: true
   },
   {
     id: '14',
@@ -147,8 +133,7 @@ export const mockWebsites: Website[] = [
     customUrl: 'musicchain',
     logoUrl: 'https://images.pexels.com/photos/1181263/pexels-photo-1181263.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
     visitCount: 9230,
-    createdAt: '2025-01-02T11:20:00Z',
-    category: 'Entertainment'
+    createdAt: '2025-01-02T11:20:00Z'
   },
   {
     id: '15',
@@ -156,8 +141,7 @@ export const mockWebsites: Website[] = [
     description: 'Professional derivatives trading platform with advanced analytics. Trade futures, options, and perpetual contracts with institutional-grade tools and deep liquidity.',
     customUrl: 'derivatrade-pro',
     visitCount: 14560,
-    createdAt: '2025-01-01T16:45:00Z',
-    category: 'Trading'
+    createdAt: '2025-01-01T16:45:00Z'
   },
   {
     id: '16',
@@ -166,8 +150,7 @@ export const mockWebsites: Website[] = [
     customUrl: 'healthdata-chain',
     logoUrl: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
     visitCount: 6120,
-    createdAt: '2024-12-31T13:30:00Z',
-    category: 'Healthcare'
+    createdAt: '2024-12-31T13:30:00Z'
   },
   {
     id: '17',
@@ -176,8 +159,7 @@ export const mockWebsites: Website[] = [
     customUrl: 'realestate-dao',
     visitCount: 10890,
     createdAt: '2024-12-30T08:15:00Z',
-    isFeatured: true,
-    category: 'Real Estate'
+    isFeatured: true
   },
   {
     id: '18',
@@ -186,8 +168,7 @@ export const mockWebsites: Website[] = [
     customUrl: 'cybersports-token',
     logoUrl: 'https://images.pexels.com/photos/1181290/pexels-photo-1181290.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
     visitCount: 12340,
-    createdAt: '2024-12-29T15:40:00Z',
-    category: 'Sports'
+    createdAt: '2024-12-29T15:40:00Z'
   },
   {
     id: '19',
@@ -195,8 +176,7 @@ export const mockWebsites: Website[] = [
     description: 'Blockchain-based supply chain transparency solution. Track products from origin to consumer, verify authenticity, and ensure ethical sourcing standards.',
     customUrl: 'supplyvault',
     visitCount: 7650,
-    createdAt: '2024-12-28T12:25:00Z',
-    category: 'Supply Chain'
+    createdAt: '2024-12-28T12:25:00Z'
   },
   {
     id: '20',
@@ -206,7 +186,6 @@ export const mockWebsites: Website[] = [
     logoUrl: 'https://images.pexels.com/photos/1181243/pexels-photo-1181243.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
     visitCount: 18920,
     createdAt: '2024-12-27T10:05:00Z',
-    isFeatured: true,
-    category: 'AI Trading'
+    isFeatured: true
   }
 ];

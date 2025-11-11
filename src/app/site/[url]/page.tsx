@@ -108,13 +108,6 @@ const WebsitePage = () => {
               <Calendar className="w-4 h-4" />
               <span>Created {formatDate(website.createdAt)}</span>
             </div>
-            {website.category && (
-              <div className="inline-block">
-                <span className="bg-purple-600/20 text-purple-400 px-2 py-1 rounded text-xs font-medium">
-                  {website.category}
-                </span>
-              </div>
-            )}
           </div>
         </div>
 
@@ -177,7 +170,7 @@ const WebsitePage = () => {
           <h2 className="text-xl font-bold text-white mb-6">Similar Projects</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {mockWebsites
-              .filter(w => w.id !== website.id && w.category === website.category)
+              .filter(w => w.id !== website.id)
               .slice(0, 3)
               .map(similar => (
                 <Link

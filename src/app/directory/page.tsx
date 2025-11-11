@@ -20,18 +20,13 @@ const DirectoryPage = () => {
     if (searchQuery) {
       filtered = filtered.filter(website => 
         website.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        website.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        website.category?.toLowerCase().includes(searchQuery.toLowerCase())
+        website.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // Apply category filter
-    if (filterBy !== 'all') {
-      if (filterBy === 'featured') {
-        filtered = filtered.filter(website => website.isFeatured);
-      } else {
-        filtered = filtered.filter(website => website.category === filterBy);
-      }
+    // Apply featured filter
+    if (filterBy === 'featured') {
+      filtered = filtered.filter(website => website.isFeatured);
     }
 
     // Apply sorting
@@ -58,8 +53,6 @@ const DirectoryPage = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-  const categories = Array.from(new Set(mockWebsites.map(w => w.category).filter(Boolean)));
 
   return (
     <main className="py-8 px-4 sm:px-6 lg:px-8">
@@ -98,11 +91,8 @@ const DirectoryPage = () => {
                   onChange={(e) => setFilterBy(e.target.value)}
                   className="pl-10 pr-8 py-3 bg-gray-900/50 border border-gray-600 rounded-lg text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all appearance-none"
                 >
-                  <option value="all">All Categories</option>
+                  <option value="all">All Websites</option>
                   <option value="featured">Featured</option>
-                  {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
                 </select>
               </div>
 

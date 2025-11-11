@@ -3,20 +3,41 @@ import React, { useState } from 'react';
 import { Upload, Wand2, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 
 const WebsiteGenerator = () => {
+  const [projectName, setProjectName] = useState('');
   const [description, setDescription] = useState('');
+  const [shortDescription, setShortDescription] = useState('');
   const [customUrl, setCustomUrl] = useState('');
+  const [contractAddress, setContractAddress] = useState('');
+  const [blockchain, setBlockchain] = useState('SOL');
+  const [buyLink, setBuyLink] = useState('');
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationComplete, setGenerationComplete] = useState(false);
   const [urlAvailable, setUrlAvailable] = useState<boolean | null>(null);
+  const [urlTaken, setUrlTaken] = useState<boolean>(false);
   const [publishedUrl, setPublishedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [buyLinkValid, setBuyLinkValid] = useState<boolean | null>(null);
 
   const maxDescriptionLength = 2000;
   const minDescriptionLength = 10;
   const maxUrlLength = 50;
+  const maxProjectNameLength = 100;
+  const minProjectNameLength = 1;
   const slugPattern = /^[a-z0-9-]{3,50}$/;
+  
+  const blockchains = [
+    { value: 'SOL', label: 'Solana (SOL)' },
+    { value: 'ETH', label: 'Ethereum (ETH)' },
+    { value: 'BSC', label: 'Binance Smart Chain (BSC)' },
+    { value: 'BASE', label: 'Base' },
+    { value: 'ARB', label: 'Arbitrum (ARB)' },
+    { value: 'AVAX', label: 'Avalanche (AVAX)' },
+    { value: 'MATIC', label: 'Polygon (MATIC)' },
+    { value: 'OP', label: 'Optimism (OP)' },
+    { value: 'FTM', label: 'Fantom (FTM)' },
+  ];
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -33,10 +54,13 @@ const WebsiteGenerator = () => {
       setPublishedUrl(null);
       setGenerationComplete(false);
       setError(null);
+      setUrlTaken(false);
+      
       if (sanitizedValue.length === 0) {
         setUrlAvailable(null);
         return;
       }
+      
       setUrlAvailable(slugPattern.test(sanitizedValue));
     }
   };
@@ -62,6 +86,90 @@ const WebsiteGenerator = () => {
     }
   };
 
+  const formatUrl = (urlString: string): string => {
+    if (!urlString || urlString.trim().length === 0) {
+      return '';
+    }
+
+    const trimmed = urlString.trim();
+    
+    // Check if it starts with http:// or https://
+    const hasProtocol = /^https?:\/\//i.test(trimmed);
+    
+    // If it already has a protocol, return as is
+    if (hasProtocol) {
+      return trimmed;
+    }
+    
+    // Otherwise, prepend https://
+    return `https://${trimmed}`;
+  };
+
+  const validateUrl = (urlString: string): boolean => {
+    if (!urlString || urlString.trim().length === 0) {
+      return false;
+    }
+
+    // Remove leading/trailing whitespace
+    const trimmed = urlString.trim();
+    
+    // Check if it starts with http:// or https://
+    const hasProtocol = /^https?:\/\//i.test(trimmed);
+    
+    // Check if it starts with www.
+    const startsWithWww = /^www\./i.test(trimmed);
+    
+    // If it doesn't have a protocol and doesn't start with www., prepend https://
+    let urlToValidate = trimmed;
+    if (!hasProtocol && !startsWithWww) {
+      urlToValidate = `https://${trimmed}`;
+    } else if (startsWithWww && !hasProtocol) {
+      urlToValidate = `https://${trimmed}`;
+    }
+    
+    try {
+      const url = new URL(urlToValidate);
+      
+      // Validate protocol
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return false;
+      }
+      
+      // Validate hostname (must have a domain and TLD)
+      const hostname = url.hostname;
+      if (!hostname || hostname.length === 0) {
+        return false;
+      }
+      
+      // Check for valid domain format (at least one dot for TLD, or localhost)
+      // Pattern: domain.tld or subdomain.domain.tld
+      const domainPattern = /^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i;
+      const isLocalhost = hostname === 'localhost' || hostname.startsWith('localhost:');
+      
+      if (!isLocalhost && !domainPattern.test(hostname)) {
+        return false;
+      }
+      
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleBuyLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.trim();
+    setBuyLink(value);
+    setError(null);
+    
+    if (value.length === 0) {
+      setBuyLinkValid(null);
+      return;
+    }
+    
+    // Validate URL format
+    setBuyLinkValid(validateUrl(value));
+  };
+
   const handleGenerate = async () => {
     if (isGenerating) {
       return;
@@ -79,14 +187,72 @@ const WebsiteGenerator = () => {
     setPublishedUrl(null);
 
     try {
+      // First check if URL is available
+      const checkResponse = await fetch(`/api/check-url?slug=${encodeURIComponent(slug)}`);
+      const checkData = await checkResponse.json();
+      
+      if (checkResponse.ok && typeof checkData.available === 'boolean' && !checkData.available) {
+        setUrlTaken(true);
+        setError("This URL has already been taken. Please choose another one.");
+        setIsGenerating(false);
+        return;
+      }
+
+      // Build enhanced prompt with additional project information
+      let enhancedPrompt = description.trim();
+      
+      const projectInfo: string[] = [];
+      if (projectName.trim()) {
+        projectInfo.push(`Project Name: ${projectName.trim()}`);
+      }
+      if (shortDescription.trim()) {
+        projectInfo.push(`Description: ${shortDescription.trim()}`);
+      }
+      if (contractAddress.trim()) {
+        projectInfo.push(`Contract Address: ${contractAddress.trim()}`);
+      }
+      if (blockchain) {
+        projectInfo.push(`Blockchain: ${blockchain}`);
+      }
+      if (buyLink.trim() && buyLinkValid === true) {
+        const formattedLink = formatUrl(buyLink.trim());
+        projectInfo.push(`Buy/Chart Link: ${formattedLink}`);
+      }
+      
+      if (projectInfo.length > 0) {
+        enhancedPrompt = `Project Information:\n${projectInfo.join('\n')}\n\nWebsite Requirements:\n${enhancedPrompt}`;
+      }
+
+      // Proceed with generation
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: description.trim(), slug }),
+        body: JSON.stringify({ 
+          prompt: enhancedPrompt, 
+          slug, 
+          projectName: projectName.trim(),
+          shortDescription: shortDescription.trim(),
+          contractAddress: contractAddress.trim(),
+          blockchain,
+          buyLink: buyLink.trim() && buyLinkValid === true 
+            ? formatUrl(buyLink.trim())
+            : '',
+        }),
       });
 
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
+        // If URL is taken (409), show it in the URL validation area
+        if (response.status === 409) {
+          setUrlTaken(true);
+          const errorMessage =
+            typeof (payload as { error?: unknown }).error === "string" && (payload as { error?: string }).error
+              ? (payload as { error?: string }).error as string
+              : "This URL has already been taken. Please choose another one.";
+          setError(errorMessage);
+          setIsGenerating(false);
+          return;
+        }
         const message =
           typeof (payload as { error?: unknown }).error === "string" && (payload as { error?: string }).error
             ? (payload as { error?: string }).error as string
@@ -96,7 +262,7 @@ const WebsiteGenerator = () => {
 
       const pathFromServer =
         typeof (payload as { path?: unknown }).path === "string"
-          ? (payload as { path?: string }).path
+          ? (payload as { path?: string }).path ?? `/${slug}`
           : `/${slug}`;
 
       setPublishedUrl(pathFromServer);
@@ -110,9 +276,15 @@ const WebsiteGenerator = () => {
   };
 
   const canGenerate =
+    projectName.trim().length >= minProjectNameLength &&
+    contractAddress.trim().length > 0 &&
+    blockchain.trim().length > 0 &&
+    buyLink.trim().length > 0 &&
+    buyLinkValid === true &&
     description.trim().length >= minDescriptionLength &&
     customUrl.length > 0 &&
     urlAvailable === true &&
+    logo !== null &&
     !isGenerating;
 
   if (generationComplete) {
@@ -133,7 +305,7 @@ const WebsiteGenerator = () => {
             Your crypto website is now live and ready to share with the world.
           </p>
           <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6 mb-8 max-w-md mx-auto">
-            <p className="text-gray-400 mb-2">Your website is live at:</p>
+            <p className="text-gray-400 mb-2">Website Link</p>
             <a 
               href={slugPath}
               className="text-purple-400 hover:text-purple-300 font-medium text-lg break-all"
@@ -150,18 +322,25 @@ const WebsiteGenerator = () => {
               rel="noopener noreferrer"
               className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 text-white px-8 py-3 rounded-lg font-semibold transition-all transform hover:scale-105"
             >
-              View Your Website
+              Visit Website
             </a>
             <button
               onClick={() => {
                 setGenerationComplete(false);
+                setProjectName('');
                 setDescription('');
+                setShortDescription('');
                 setCustomUrl('');
+                setContractAddress('');
+                setBlockchain('SOL');
+                setBuyLink('');
                 setLogo(null);
                 setLogoPreview(null);
                 setUrlAvailable(null);
+                setUrlTaken(false);
                 setPublishedUrl(null);
                 setError(null);
+                setBuyLinkValid(null);
               }}
               className="text-gray-300 hover:text-white px-8 py-3 rounded-lg font-medium border border-gray-700 hover:border-purple-500/50 transition-all"
             >
@@ -186,17 +365,131 @@ const WebsiteGenerator = () => {
       </div>
 
       <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-8">
-        <form className="space-y-8">
+        <form className="space-y-6">
+          {/* Project Name Input */}
+          <div>
+            <label className="block text-lg font-semibold text-white mb-3">
+              Project Name <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={projectName}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= maxProjectNameLength) {
+                  setProjectName(value);
+                  setError(null);
+                }
+              }}
+              placeholder=""
+              className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all"
+            />
+          </div>
+
+          {/* Short Description Input (Optional) */}
+          <div>
+            <label className="block text-lg font-semibold text-white mb-3">
+              Description <span className="text-gray-400 text-sm">(optional)</span>
+            </label>
+            <input
+              type="text"
+              value={shortDescription}
+              onChange={(e) => {
+                setShortDescription(e.target.value);
+                setError(null);
+              }}
+              placeholder="Short description of your project"
+              className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all"
+            />
+          </div>
+
+          {/* Contract Address and Blockchain - Side by side on desktop */}
+          <div className="flex flex-col md:flex-row md:gap-4">
+            {/* Contract Address Input */}
+            <div className="flex-1">
+              <label className="block text-lg font-semibold text-white mb-3">
+                Contract Address <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                value={contractAddress}
+                onChange={(e) => {
+                  setContractAddress(e.target.value);
+                  setError(null);
+                }}
+                placeholder=""
+                className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all font-mono text-sm"
+              />
+            </div>
+
+            {/* Blockchain Selector */}
+            <div className="md:w-60">
+              <label className="block text-lg font-semibold text-white mb-3">
+                Blockchain <span className="text-red-400">*</span>
+              </label>
+              <select
+                value={blockchain}
+                onChange={(e) => {
+                  setBlockchain(e.target.value);
+                  setError(null);
+                }}
+                className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-2 py-3 text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all"
+              >
+                {blockchains.map((chain) => (
+                  <option key={chain.value} value={chain.value} className="bg-gray-900">
+                    {chain.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Buy/Chart Link Input */}
+          <div>
+            <label className="block text-lg font-semibold text-white mb-3">
+              Buy/Chart Link <span className="text-red-400">*</span>
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={buyLink}
+                onChange={handleBuyLinkChange}
+                placeholder=""
+                className={`w-full bg-gray-900/50 border rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all ${
+                  buyLinkValid === false ? 'border-red-500 focus:border-red-500' : 
+                  buyLinkValid === true ? 'border-green-500 focus:border-green-500' : 
+                  'border-gray-600 focus:border-purple-500'
+                }`}
+              />
+              {buyLink && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {buyLinkValid === true && (
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                  )}
+                  {buyLinkValid === false && (
+                    <AlertCircle className="w-5 h-5 text-red-400" />
+                  )}
+                </div>
+              )}
+            </div>
+            {buyLink && buyLinkValid === false && (
+              <p className="mt-2 text-sm text-red-400 flex items-center space-x-1">
+                <AlertCircle className="w-4 h-4" />
+                <span>Please enter a valid URL (e.g., https://example.com, www.example.com, or example.com)</span>
+              </p>
+            )}
+          </div>
+
           {/* Description Input */}
           <div>
             <label className="block text-lg font-semibold text-white mb-3">
-              Describe Your Website
+              Website prompt <span className="text-red-400">*</span>
             </label>
             <div className="relative">
               <textarea
                 value={description}
                 onChange={handleDescriptionChange}
-                placeholder="Describe your crypto project in detail. Include information about features, design preferences, colors, sections, and any specific functionality you want. For example: 'Create a modern DeFi lending platform with dark theme, analytics dashboard, staking features, and gradient purple accents...'"
+                placeholder="Describe your crypto website in detail. Include information about features, design preferences, colors, sections, and any specific functionality you want"
                 rows={6}
                 className="w-full bg-gray-900/50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none transition-all resize-none"
               />
@@ -215,7 +508,7 @@ const WebsiteGenerator = () => {
           {/* Custom URL Input */}
           <div>
             <label className="block text-lg font-semibold text-white mb-3">
-              Custom URL
+              Custom URL <span className="text-red-400">*</span>
             </label>
             <div className="relative">
               <div className="flex items-center">
@@ -231,19 +524,24 @@ const WebsiteGenerator = () => {
                 />
               </div>
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                {customUrl && urlAvailable === true && (
+                {customUrl && urlAvailable === true && !urlTaken && (
                   <CheckCircle className="w-5 h-5 text-green-400" />
                 )}
-                {customUrl && urlAvailable === false && (
+                {customUrl && (urlAvailable === false || urlTaken) && (
                   <AlertCircle className="w-5 h-5 text-red-400" />
                 )}
               </div>
             </div>
             {customUrl && (
               <p className={`mt-2 text-sm flex items-center space-x-1 ${
-                urlAvailable === true ? 'text-green-400' : 'text-red-400'
+                urlAvailable === true && !urlTaken ? 'text-green-400' : 'text-red-400'
               }`}>
-                {urlAvailable === true ? (
+                {urlTaken ? (
+                  <>
+                    <AlertCircle className="w-4 h-4" />
+                    <span>This URL has already been taken. Please choose another one.</span>
+                  </>
+                ) : urlAvailable === true ? (
                   <>
                     <CheckCircle className="w-4 h-4" />
                     <span>Perfect! Your site will be available at /{customUrl}</span>
@@ -261,7 +559,7 @@ const WebsiteGenerator = () => {
           {/* Logo Upload */}
           <div>
             <label className="block text-lg font-semibold text-white mb-3">
-              Project Logo <span className="text-gray-400 font-normal">(Optional)</span>
+              Project Logo <span className="text-red-400">*</span>
             </label>
             <div className="flex items-start space-x-6">
               <div 
