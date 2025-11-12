@@ -12,7 +12,6 @@ interface WebsiteCardProps {
     visitCount: number;
     createdAt: string;
     isFeatured?: boolean;
-    category?: string;
   };
 }
 

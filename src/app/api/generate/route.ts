@@ -25,6 +25,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check if URL already exists
+    const dataDir = path.join(process.cwd(), ".data", "sites");
+    const targetFile = path.join(dataDir, `${slug}.html`);
+    try {
+      await fs.access(targetFile);
+      // File exists, URL is already taken
+      return NextResponse.json(
+        { error: "This URL has already been taken. Please choose another one." },
+        { status: 409 }
+      );
+    } catch {
+      // File doesn't exist, URL is available - proceed with generation
+    }
+
     const apiKey = process.env.GOOGLE_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
@@ -66,8 +80,18 @@ export async function POST(req: NextRequest) {
     console.log("html data from AI - ",html)
 
     // Persist to .data/sites/{slug}.html
-    const dataDir = path.join(process.cwd(), ".data", "sites");
-    const targetFile = path.join(dataDir, `${slug}.html`);
+    // Double-check the file doesn't exist (race condition protection)
+    try {
+      await fs.access(targetFile);
+      // File was created between our check and now
+      return NextResponse.json(
+        { error: "This URL has already been taken. Please choose another one." },
+        { status: 409 }
+      );
+    } catch {
+      // File doesn't exist, safe to create
+    }
+    
     await fs.mkdir(dataDir, { recursive: true });
     await fs.writeFile(targetFile, html, "utf8");
 
